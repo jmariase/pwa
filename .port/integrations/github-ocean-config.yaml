@@ -1,0 +1,17 @@
+# Port.io GitHub Ocean Integration Mapping Configuration
+# Paste this into the "Edit Configuration" YAML editor of your Github Ocean Integration in Port.io.
+
+resources:
+  - kind: repository
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: ".name"
+          title: ".name"
+          blueprint: "microservice"
+          properties:
+            language: ".language"
+            framework: "if .language == \"JavaScript\" then \"Vanilla JS\" else null end"
+            repoUrl: ".html_url"

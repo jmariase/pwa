@@ -1,0 +1,23 @@
+# Port.io Kubernetes Integration Mapping Configuration
+# Paste this into the "Edit Configuration" YAML editor of your Kubernetes Exporter in Port.io.
+
+resources:
+  - kind: deployment
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: ".metadata.uid"
+          title: ".metadata.name + \" (K8s Deployment)\""
+          blueprint: "deployment"
+          properties:
+            status: "if .status.readyReplicas == .status.replicas then \"SUCCESS\" else \"IN_PROGRESS\" end"
+            version: ".spec.template.spec.containers[0].image | split(\":\")[-1]"
+            namespace: ".metadata.namespace"
+            replicas: ".spec.replicas"
+            imageTag: ".spec.template.spec.containers[0].image | split(\":\")[-1]"
+            cluster: ".clusterName // \"k8s-production-cluster\""
+          relations:
+            microservice: "[\"pwa-client-app\"]"
+            environment: "if .metadata.namespace == \"production\" then [\"production\"] else [\"staging\"] end"
