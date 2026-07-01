@@ -7,31 +7,31 @@
     "trigger": {
       "type": "self-service",
       "operation": "DAY-2",
-      "blueprintIdentifier": "microservice"
-    },
-    "userInputs": {
-      "properties": {
-        "environment": {
-          "type": "string",
-          "title": "Target Environment",
-          "description": "Select stage",
-          "enum": ["staging", "production"],
-          "default": "staging"
+      "blueprintIdentifier": "microservice",
+      "userInputs": {
+        "properties": {
+          "environment": {
+            "type": "string",
+            "title": "Target Environment",
+            "description": "Select stage",
+            "enum": ["staging", "production"],
+            "default": "staging"
+          },
+          "namespace": {
+            "type": "string",
+            "title": "K8s Namespace",
+            "description": "Kubernetes Namespace to deploy resources in",
+            "default": "default"
+          },
+          "replicas": {
+            "type": "number",
+            "title": "Replica Count",
+            "description": "Number of pods to boot",
+            "default": 2
+          }
         },
-        "namespace": {
-          "type": "string",
-          "title": "K8s Namespace",
-          "description": "Kubernetes Namespace to deploy resources in",
-          "default": "default"
-        },
-        "replicas": {
-          "type": "number",
-          "title": "Replica Count",
-          "description": "Number of pods to boot",
-          "default": 2
-        }
-      },
-      "required": ["environment", "namespace", "replicas"]
+        "required": ["environment", "namespace", "replicas"]
+      }
     },
     "invocationMethod": {
       "type": "GITHUB",
