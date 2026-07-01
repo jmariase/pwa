@@ -8,7 +8,7 @@ resources:
     port:
       entity:
         mappings:
-          identifier: "\"pwa-client-app\"" # Target our microservice ID
+          identifier: ".key" # Dynamically maps to the corresponding microservice using the SonarQube Project Key
           blueprint: "microservice"
           properties:
             qualityGate: ".qualityGate.status" # e.g. OK, ERROR

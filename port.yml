@@ -1,14 +1,26 @@
-# Port GitOps Entity Definition
-# This file is automatically discovered by the Port GitHub App to register the service in the catalog.
+# Port GitOps Entity Definitions
+# This file is automatically discovered by the Port GitHub App to register the monorepo services in the catalog.
 
-identifier: pwa-client-app
-title: Port PWA Core Client
-blueprint: microservice
-properties:
-  language: JavaScript
-  framework: Vanilla JS
-  repoUrl: https://github.com/jmariase/pwa
-  qualityGate: PASSED
-  bugs: 0
-  vulnerabilities: 0
-  coverage: 100
+- identifier: pwa-client-app
+  title: Port PWA Core Client
+  blueprint: microservice
+  properties:
+    language: JavaScript
+    framework: Vanilla JS
+    repoUrl: https://github.com/jmariase/pwa
+    qualityGate: PASSED
+    bugs: 0
+    vulnerabilities: 0
+    coverage: 100
+
+- identifier: pwa-backend-app
+  title: Port PWA Backend API
+  blueprint: microservice
+  properties:
+    language: JavaScript
+    framework: Express.js
+    repoUrl: https://github.com/jmariase/pwa
+    qualityGate: PASSED
+    bugs: 0
+    vulnerabilities: 0
+    coverage: 100

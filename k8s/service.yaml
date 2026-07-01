@@ -13,3 +13,19 @@ spec:
     name: http
   selector:
     app: pwa-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pwa-backend-service
+  labels:
+    app: pwa-backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  selector:
+    app: pwa-backend

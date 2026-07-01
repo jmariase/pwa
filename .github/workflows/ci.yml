@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of SonarQube analysis
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -23,13 +23,13 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install Monorepo Dependencies
         run: npm ci
 
-      - name: Run ESLint Checks
+      - name: Run Linting Checks
         run: npm run lint
 
-      - name: Run Unit Tests with Coverage
+      - name: Run Tests with Coverages
         run: npm test
 
       # ----------------------------------------------------
@@ -39,10 +39,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          # If using self-hosted SonarQube, uncomment the line below:
-          # SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      # Optional: Wait for SonarQube Quality Gate status
       - name: SonarQube Quality Gate Check
         id: sonarqube-quality-gate
         uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
@@ -51,9 +48,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # ----------------------------------------------------
-      # Port.io Catalog Integration
+      # Port.io Catalog Integration (API Registration)
       # ----------------------------------------------------
-      - name: Register Service in Port.io
+      - name: Register Frontend PWA in Port.io
         uses: port-labs/port-github-action@v1
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
@@ -68,6 +65,28 @@ jobs:
             {
               "language": "JavaScript",
               "framework": "Vanilla JS",
+              "qualityGate": "${{ steps.sonarqube-quality-gate.outputs.quality-gate-status }}",
+              "bugs": 0,
+              "vulnerabilities": 0,
+              "coverage": 100,
+              "repoUrl": "https://github.com/${{ github.repository }}"
+            }
+
+      - name: Register Backend API in Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: UPSERT
+          blueprint: microservice
+          identifier: pwa-backend-app
+          title: "Port PWA Backend API"
+          icon: Nodejs
+          properties: |
+            {
+              "language": "JavaScript",
+              "framework": "Express.js",
               "qualityGate": "${{ steps.sonarqube-quality-gate.outputs.quality-gate-status }}",
               "bugs": 0,
               "vulnerabilities": 0,

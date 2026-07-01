@@ -5,13 +5,21 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
   - host: pwa.local
     http:
       paths:
-      - path: /
+      - path: /api(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: pwa-backend-service
+            port:
+              number: 5000
+      - path: /()(.*)
         pathType: Prefix
         backend:
           service:

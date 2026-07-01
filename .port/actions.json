@@ -1,15 +1,22 @@
 [
   {
     "identifier": "deploy_pwa",
-    "title": "Deploy PWA Service to K8s",
+    "title": "Deploy Service to K8s",
     "icon": "Kubernetes",
-    "description": "Deploys the PWA container to a target namespace and replica count in Kubernetes.",
+    "description": "Deploys the PWA client or backend container to a target namespace and replica count in Kubernetes.",
     "trigger": {
       "type": "self-service",
       "operation": "DAY-2",
       "blueprintIdentifier": "microservice",
       "userInputs": {
         "properties": {
+          "service": {
+            "type": "string",
+            "title": "Service to Deploy",
+            "description": "Choose which microservice to build and deploy",
+            "enum": ["pwa-client-app", "pwa-backend-app"],
+            "default": "pwa-client-app"
+          },
           "environment": {
             "type": "string",
             "title": "Target Environment",
@@ -30,7 +37,7 @@
             "default": 2
           }
         },
-        "required": ["environment", "namespace", "replicas"]
+        "required": ["service", "environment", "namespace", "replicas"]
       }
     },
     "invocationMethod": {
@@ -39,6 +46,7 @@
       "repo": "YOUR_GITHUB_REPO",
       "workflow": "deploy.yml",
       "workflowInputs": {
+        "service": "{{ .inputs.service }}",
         "environment": "{{ .inputs.environment }}",
         "namespace": "{{ .inputs.namespace }}",
         "replicas": "{{ .inputs.replicas }}",
