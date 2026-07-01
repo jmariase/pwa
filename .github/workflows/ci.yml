@@ -45,7 +45,7 @@ jobs:
       # Optional: Wait for SonarQube Quality Gate status
       - name: SonarQube Quality Gate Check
         id: sonarqube-quality-gate
-        uses: SonarSource/sonarqube-quality-gate-action@v2
+        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
