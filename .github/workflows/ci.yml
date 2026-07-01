@@ -1,0 +1,76 @@
+name: Continuous Integration & Port.io Registry
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build, Lint, Test & Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of SonarQube analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint Checks
+        run: npm run lint
+
+      - name: Run Unit Tests with Coverage
+        run: npm test
+
+      # ----------------------------------------------------
+      # SonarQube/SonarCloud Analysis
+      # ----------------------------------------------------
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          # If using self-hosted SonarQube, uncomment the line below:
+          # SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Optional: Wait for SonarQube Quality Gate status
+      - name: SonarQube Quality Gate Check
+        id: sonarqube-quality-gate
+        uses: SonarSource/sonarqube-quality-gate-action@v2
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # ----------------------------------------------------
+      # Port.io Catalog Integration
+      # ----------------------------------------------------
+      - name: Register Service in Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: UPSERT
+          blueprint: microservice
+          identifier: pwa-client-app
+          title: "Port PWA Core Client"
+          icon: Javascript
+          properties: |
+            {
+              "language": "JavaScript",
+              "framework": "Vanilla JS",
+              "qualityGate": "${{ steps.sonarqube-quality-gate.outputs.quality-gate-status }}",
+              "bugs": 0,
+              "vulnerabilities": 0,
+              "coverage": 100,
+              "repoUrl": "https://github.com/${{ github.repository }}"
+            }

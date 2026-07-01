@@ -1,0 +1,24 @@
+{
+  "name": "Port.io PWA Integration Flow",
+  "short_name": "DevOps PWA",
+  "description": "Progressive Web App demonstrating CI/CD metrics pipelines with SonarQube and Port.io Cataloging.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#09070f",
+  "theme_color": "#120e24",
+  "icons": [
+    {
+      "src": "icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

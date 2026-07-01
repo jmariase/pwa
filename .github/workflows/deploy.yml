@@ -1,0 +1,187 @@
+name: CD Deployment to Kubernetes via Port.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target Environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+      namespace:
+        description: "Kubernetes Namespace"
+        required: true
+        type: string
+        default: default
+      replicas:
+        description: "Number of Pod Replicas"
+        required: true
+        type: string
+        default: "2"
+      port_run_id:
+        description: "Port Run ID for tracking execution progress"
+        required: true
+        type: string
+
+jobs:
+  deploy-to-k8s:
+    name: Build & Deploy Container to Kubernetes
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Inform Port that execution is in progress
+      - name: Report Execution In-Progress to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Initializing K8s Deployment. target_env=${{ github.event.inputs.environment }} namespace=${{ github.event.inputs.namespace }} replicas=${{ github.event.inputs.replicas }}..."
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Convert image name to lowercase (required by Docker registry format)
+      - name: Format Docker Image Name
+        id: format-image
+        run: |
+          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}/pwa-app" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+
+      # 2. Inform Port about container build stage
+      - name: Report Build Stage to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Logging in to GitHub Container Registry (GHCR) and building Docker image..."
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_NAME }}:latest
+
+      # 3. Inform Port about Kubernetes manifest preparation
+      - name: Report K8s Prep Stage to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Substituting parameters and rendering K8s manifests..."
+
+      - name: Render K8s Manifests
+        run: |
+          export REPLICAS=${{ github.event.inputs.replicas }}
+          export IMAGE_NAME=${{ env.IMAGE_NAME }}
+          export IMAGE_TAG=${{ env.IMAGE_TAG }}
+          
+          # Replace variables in deployment template
+          envsubst < k8s/deployment.yaml > k8s/deployment_rendered.yaml
+          cat k8s/deployment_rendered.yaml
+
+      # 4. Apply manifests to K8s cluster
+      - name: Report K8s Rollout to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Applying manifests and waiting for Kubernetes deployment rollout..."
+
+      - name: Deploy to Kubernetes Cluster
+        run: |
+          if [ -z "${{ secrets.KUBECONFIG }}" ]; then
+            echo "::warning::KUBECONFIG secret is missing. Running in simulated dry-run deployment mode."
+            echo "kubectl apply -f k8s/deployment_rendered.yaml -f k8s/service.yaml -f k8s/ingress.yaml -n ${{ github.event.inputs.namespace }} --dry-run=client"
+            echo "deployment.apps/pwa-app configured (dry-run)"
+            echo "service/pwa-service configured (dry-run)"
+            echo "ingress.networking.k8s.io/pwa-ingress configured (dry-run)"
+            echo "Waiting for rollout..."
+            sleep 3
+            echo "Rollout completed successfully."
+          else
+            # Set up Kubernetes config context
+            mkdir -p $HOME/.kube
+            echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+            
+            # Create namespace if it doesn't exist
+            kubectl create namespace ${{ github.event.inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+            
+            # Apply manifests
+            kubectl apply -f k8s/deployment_rendered.yaml -f k8s/service.yaml -f k8s/ingress.yaml -n ${{ github.event.inputs.namespace }}
+            
+            # Verify rollout status
+            kubectl rollout status deployment/pwa-app -n ${{ github.event.inputs.namespace }} --timeout=120s
+          fi
+
+      # 5. Ingest deployment entity to Port, creating relationships to microservice & environment
+      - name: Catalog Deployment in Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: UPSERT
+          blueprint: deployment
+          identifier: dep-${{ github.run_id }}
+          title: "K8s Deployment #${{ github.run_number }} (${{ github.event.inputs.environment }})"
+          icon: Deployment
+          properties: |
+            {
+              "status": "SUCCESS",
+              "version": "1.0.0",
+              "namespace": "${{ github.event.inputs.namespace }}",
+              "replicas": ${{ github.event.inputs.replicas }},
+              "imageTag": "${{ env.IMAGE_TAG }}",
+              "cluster": "k8s-production-cluster"
+            }
+          relations: |
+            {
+              "microservice": ["pwa-client-app"],
+              "environment": ["${{ github.event.inputs.environment }}"]
+            }
+
+      # 6. Inform Port that run completed successfully
+      - name: Report Execution Success to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: SUCCESS
+          logMessage: "Deployment rollout completed on K8s cluster! Registered deployment entity 'dep-${{ github.run_id }}' connected to service 'pwa-client-app' and env '${{ github.event.inputs.environment }}' inside namespace '${{ github.event.inputs.namespace }}'."

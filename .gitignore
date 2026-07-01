@@ -1,0 +1,13 @@
+# Node dependencies
+node_modules/
+
+# Test coverage logs
+coverage/
+
+# Local env files / secrets
+.env
+.env.local
+
+# Operating System files
+.DS_Store
+Thumbs.db

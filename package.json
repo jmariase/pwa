@@ -1,0 +1,27 @@
+{
+  "name": "port-io-pwa-flow",
+  "version": "1.0.0",
+  "description": "PWA demonstrating integration with SonarQube, GitHub Actions, and Port.io",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "dev": "http-server -p 8080 -c-1",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "pwa",
+    "port.io",
+    "sonarqube",
+    "github-actions"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "@eslint/js": "^9.0.0",
+    "globals": "^15.0.0",
+    "http-server": "^14.1.1",
+    "jest": "^29.7.0"
+  }
+}

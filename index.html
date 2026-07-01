@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PWA Dashboard for SonarQube, GitHub Actions, and Port.io integration demonstration.">
+  <meta name="theme-color" content="#1e1b4b">
+  <title>DevOps Portal - Port.io PWA Flow</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="index.css">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+</head>
+<body>
+  <div class="glass-bg"></div>
+  
+  <header class="app-header">
+    <div class="logo-container">
+      <div class="logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="logo-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#818cf8" />
+              <stop offset="1" stop-color="#ec4899" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1>Port.io PWA Integration</h1>
+    </div>
+    
+    <div class="header-actions">
+      <div id="pwa-status" class="status-badge offline-badge">
+        <span class="status-indicator"></span>
+        <span class="status-text">Loading SW...</span>
+      </div>
+      <button id="btn-install" class="btn btn-primary" style="display: none;">
+        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Install App
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Section 1: Introduction and System Overview -->
+    <section class="intro-section card">
+      <div class="intro-header">
+        <h2>DevOps & Quality Dashboard</h2>
+        <p class="subtitle">Demonstrating Port.io Service Catalog integration and SonarQube quality gate verification.</p>
+      </div>
+      <div class="system-stats">
+        <div class="stat-pill">
+          <span class="label">PWA Offline Mode:</span>
+          <span id="sw-state" class="value text-warning">Checking...</span>
+        </div>
+        <div class="stat-pill">
+          <span class="label">SonarQube Scan:</span>
+          <span class="value text-success">Configured</span>
+        </div>
+        <div class="stat-pill">
+          <span class="label">GitHub Pipeline:</span>
+          <span class="value text-accent">Active</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Metrics Grid -->
+    <div class="metrics-grid">
+      <!-- SonarQube Metrics Card -->
+      <section class="card metrics-card" id="card-sonarqube">
+        <div class="card-header">
+          <div class="card-icon sonar-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h3>SonarQube Code Quality</h3>
+        </div>
+        
+        <div class="quality-gate-banner passed">
+          <span class="gate-status">PASSED</span>
+          <span class="gate-desc">Quality Gate requirements met</span>
+        </div>
+
+        <div class="sonar-metrics">
+          <div class="metric-item">
+            <span class="metric-val">100%</span>
+            <span class="metric-label">Coverage</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val">0</span>
+            <span class="metric-label">Bugs</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val">0</span>
+            <span class="metric-label">Vulnerabilities</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val">0</span>
+            <span class="metric-label">Code Smells</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Port.io Entity Status Card -->
+      <section class="card metrics-card" id="card-port">
+        <div class="card-header">
+          <div class="card-icon port-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9" rx="1"/>
+              <rect x="14" y="3" width="7" height="5" rx="1"/>
+              <rect x="14" y="12" width="7" height="9" rx="1"/>
+              <rect x="3" y="16" width="7" height="5" rx="1"/>
+            </svg>
+          </div>
+          <h3>Port.io Developer Portal</h3>
+        </div>
+
+        <div class="port-entity-list">
+          <div class="entity-item">
+            <span class="entity-name">Blueprint: microservice</span>
+            <span class="entity-status registered">Registered</span>
+          </div>
+          <div class="entity-item">
+            <span class="entity-name">Blueprint: environment</span>
+            <span class="entity-status registered">Registered</span>
+          </div>
+          <div class="entity-item">
+            <span class="entity-name">Blueprint: deployment</span>
+            <span class="entity-status registered">Registered</span>
+          </div>
+        </div>
+
+        <div class="port-footer">
+          <span class="port-sync-time">Last Synced: <strong id="sync-time">Never</strong></span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Section 3: Interactive CI/CD Pipeline Simulator -->
+    <section class="card pipeline-simulator-section">
+      <div class="card-header">
+        <div class="card-icon pipeline-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h3>Interactive CI/CD Pipeline Simulator</h3>
+          <p class="card-subtitle">Test and visualize how GitHub Actions reports metrics to Port.io in real time.</p>
+        </div>
+      </div>
+
+      <div class="simulator-controls">
+        <button id="btn-run-pipeline" class="btn btn-accent">
+          <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Run Local Pipeline
+        </button>
+        <div class="pipeline-progress-container">
+          <div class="progress-bar-bg">
+            <div id="pipeline-progress" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <span id="pipeline-percentage" class="progress-pct">0%</span>
+        </div>
+      </div>
+
+      <!-- Terminal Output -->
+      <div class="terminal-container">
+        <div class="terminal-header">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">github-actions-runner@pwa-agent: ~</span>
+        </div>
+        <div id="terminal-body" class="terminal-body">
+          <div class="terminal-line system-msg">Ready to simulate pipeline runs. Click 'Run Local Pipeline' above...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: DevOps Integration Docs -->
+    <section class="card docs-section">
+      <h2>How to Connect to Your Port.io Workspace</h2>
+      <p class="subtitle">Complete configuration files are generated in this repository. Follow these steps to map them:</p>
+
+      <div class="steps-container">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4>Create Blueprints in Port.io</h4>
+          <p>Go to your Port Builder and import the blueprint definitions found in the file <a href=".port/blueprints.json">.port/blueprints.json</a>.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4>Configure Self-Service Action</h4>
+          <p>Add the deploy action to Port.io using the definition in <a href=".port/actions.json">.port/actions.json</a> to trigger GitHub deployments.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4>Configure GitHub Secrets</h4>
+          <p>Add <code>PORT_CLIENT_ID</code>, <code>PORT_CLIENT_SECRET</code>, and <code>SONAR_TOKEN</code> to your GitHub Repo Secrets.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Port.io & SonarQube PWA Flow Demo &copy; 2026. Premium Dev Portal Core.</p>
+  </footer>
+  
+  <!-- Logic -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

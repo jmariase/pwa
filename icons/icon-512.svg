@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="110" fill="#09070f"/>
+  <circle cx="256" cy="256" r="210" fill="url(#circle-grad)" opacity="0.06"/>
+  
+  <!-- DevOps Node connection graphic -->
+  <path d="M256 90L100 185L256 280L412 185L256 90Z" stroke="url(#accent-grad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M100 320L256 415L412 320" stroke="url(#accent-grad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M100 252L256 347L412 252" stroke="url(#accent-grad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Outer Glow Nodes -->
+  <circle cx="256" cy="90" r="12" fill="#ec4899"/>
+  <circle cx="100" cy="185" r="12" fill="#818cf8"/>
+  <circle cx="412" cy="185" r="12" fill="#818cf8"/>
+  <circle cx="256" cy="415" r="12" fill="#ec4899"/>
+
+  <defs>
+    <linearGradient id="circle-grad" x1="42" y1="42" x2="470" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="100" y1="90" x2="412" y2="415" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#818cf8"/>
+      <stop offset="0.5" stop-color="#c084fc"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+</svg>
