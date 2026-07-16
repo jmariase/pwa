@@ -130,22 +130,11 @@
               <rect x="3" y="16" width="7" height="5" rx="1"/>
             </svg>
           </div>
-          <h3>Port.io Developer Portal</h3>
+          <h3>Port.io Developer Portal (Simulated)</h3>
         </div>
 
-        <div class="port-entity-list">
-          <div class="entity-item">
-            <span class="entity-name">Blueprint: microservice</span>
-            <span class="entity-status registered">Registered</span>
-          </div>
-          <div class="entity-item">
-            <span class="entity-name">Blueprint: environment</span>
-            <span class="entity-status registered">Registered</span>
-          </div>
-          <div class="entity-item">
-            <span class="entity-name">Blueprint: deployment</span>
-            <span class="entity-status registered">Registered</span>
-          </div>
+        <div class="port-entity-list" id="port-entity-list" style="min-height: 180px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.65rem;">
+          <!-- Will be dynamically populated by app.js -->
         </div>
 
         <div class="port-footer">
@@ -169,12 +158,22 @@
       </div>
 
       <div class="simulator-controls">
-        <button id="btn-run-pipeline" class="btn btn-accent">
-          <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          Run Local Pipeline
-        </button>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <select id="select-pipeline-type" class="pipeline-select" style="background: rgba(22, 17, 45, 0.95); border: 1px solid var(--card-border); color: #fff; padding: 0.6rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-sans); font-weight: 500; outline: none; cursor: pointer; transition: all var(--transition-fast);">
+            <option value="scaffold">Day 1: Scaffold Microservice</option>
+            <option value="ci-cd" selected>Day 2: CI/CD Deployment (QA & Prod)</option>
+            <option value="scale">Day 2: Scale Pods (Replica Control)</option>
+            <option value="teardown">Day 2: Teardown Environment</option>
+          </select>
+          
+          <button id="btn-run-pipeline" class="btn btn-accent">
+            <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Trigger Action
+          </button>
+        </div>
+        
         <div class="pipeline-progress-container">
           <div class="progress-bar-bg">
             <div id="pipeline-progress" class="progress-bar-fill" style="width: 0%;"></div>
@@ -192,7 +191,7 @@
           <span class="terminal-title">github-actions-runner@pwa-agent: ~</span>
         </div>
         <div id="terminal-body" class="terminal-body">
-          <div class="terminal-line system-msg">Ready to simulate pipeline runs. Click 'Run Local Pipeline' above...</div>
+          <div class="terminal-line system-msg">Ready to simulate pipeline runs. Click 'Trigger Action' above...</div>
         </div>
       </div>
     </section>

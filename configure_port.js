@@ -4,11 +4,13 @@ import path from 'path';
 // Load credentials from environment or command-line arguments
 const clientId = process.env.PORT_CLIENT_ID || process.argv[2];
 const clientSecret = process.env.PORT_CLIENT_SECRET || process.argv[3];
+const org = process.env.GITHUB_ORG || process.argv[4] || 'jmariase';
+const repo = process.env.GITHUB_REPO || process.argv[5] || 'pwa';
 const workspacePath = '.';
 
 if (!clientId || !clientSecret) {
   console.error('❌ Error: Missing credentials!');
-  console.log('Usage: node configure_port.js <PORT_CLIENT_ID> <PORT_CLIENT_SECRET>');
+  console.log('Usage: node configure_port.js <PORT_CLIENT_ID> <PORT_CLIENT_SECRET> [GITHUB_ORG] [GITHUB_REPO]');
   console.log('Alternatively, set PORT_CLIENT_ID and PORT_CLIENT_SECRET environment variables.');
   process.exit(1);
 }
@@ -80,11 +82,13 @@ async function run() {
 
       for (const action of actions) {
         // Automatically inject user settings
-        if (action.invocationMethod && action.invocationMethod.org === 'YOUR_GITHUB_ORG') {
-          action.invocationMethod.org = 'jmariase';
-        }
-        if (action.invocationMethod && action.invocationMethod.repo === 'YOUR_GITHUB_REPO') {
-          action.invocationMethod.repo = 'pwa';
+        if (action.invocationMethod) {
+          if (action.invocationMethod.org === 'YOUR_GITHUB_ORG') {
+            action.invocationMethod.org = org;
+          }
+          if (action.invocationMethod.repo === 'YOUR_GITHUB_REPO') {
+            action.invocationMethod.repo = repo;
+          }
         }
 
         console.log(`Sending action: ${action.identifier} (${action.title})...`);
@@ -114,6 +118,44 @@ async function run() {
       }
     } else {
       console.warn(`⚠️ Warning: actions.json not found at ${actionsFile}`);
+    }
+
+    // 3. Seed Environment Entities (QA and PROD)
+    console.log('\n🌱 Seeding environment entities...');
+    const environments = [
+      {
+        identifier: 'qa',
+        title: 'QA Environment',
+        properties: {
+          type: 'staging',
+          region: 'us-east-1',
+          description: 'Quality Assurance testing environment'
+        }
+      },
+      {
+        identifier: 'prod',
+        title: 'Production Environment',
+        properties: {
+          type: 'production',
+          region: 'us-east-1',
+          description: 'Production stable environment'
+        }
+      }
+    ];
+
+    for (const env of environments) {
+      console.log(`Sending environment entity: ${env.identifier} (${env.title})...`);
+      const envResponse = await fetch(`${baseUrl}/blueprints/environment/entities?upsert=true`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(env)
+      });
+
+      if (envResponse.ok) {
+        console.log(`✅ Environment entity '${env.identifier}' seeded successfully.`);
+      } else {
+        console.error(`❌ Failed to seed environment entity '${env.identifier}': ${await envResponse.text()}`);
+      }
     }
 
     console.log('\n🎉 Port.io configuration script finished successfully!');

@@ -21,14 +21,14 @@
             "type": "string",
             "title": "Target Environment",
             "description": "Select stage",
-            "enum": ["staging", "production"],
-            "default": "staging"
+            "enum": ["qa", "prod"],
+            "default": "qa"
           },
           "namespace": {
             "type": "string",
             "title": "K8s Namespace",
             "description": "Kubernetes Namespace to deploy resources in",
-            "default": "default"
+            "default": "qa"
           },
           "replicas": {
             "type": "number",
@@ -50,6 +50,122 @@
         "environment": "{{ .inputs.environment }}",
         "namespace": "{{ .inputs.namespace }}",
         "replicas": "{{ .inputs.replicas }}",
+        "port_run_id": "{{ .run.id }}"
+      }
+    }
+  },
+  {
+    "identifier": "scaffold_microservice",
+    "title": "Create New Microservice",
+    "icon": "Nodejs",
+    "description": "Bootstraps a new microservice in the monorepo from a template.",
+    "trigger": {
+      "type": "self-service",
+      "operation": "CREATE",
+      "blueprintIdentifier": "microservice",
+      "userInputs": {
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "title": "Microservice Name",
+            "description": "Unique identifier of the new service (e.g., billing-service)",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "language": {
+            "type": "string",
+            "title": "Programming Language",
+            "enum": ["JavaScript", "TypeScript", "Python", "Go"],
+            "default": "JavaScript"
+          },
+          "framework": {
+            "type": "string",
+            "title": "Web Framework",
+            "enum": ["Express.js", "React", "FastAPI", "Gin"],
+            "default": "Express.js"
+          }
+        },
+        "required": ["service_name", "language", "framework"]
+      }
+    },
+    "invocationMethod": {
+      "type": "GITHUB",
+      "org": "YOUR_GITHUB_ORG",
+      "repo": "YOUR_GITHUB_REPO",
+      "workflow": "scaffold.yml",
+      "workflowInputs": {
+        "service_name": "{{ .inputs.service_name }}",
+        "language": "{{ .inputs.language }}",
+        "framework": "{{ .inputs.framework }}",
+        "port_run_id": "{{ .run.id }}"
+      }
+    }
+  },
+  {
+    "identifier": "scale_service",
+    "title": "Scale Microservice Pods",
+    "icon": "Kubernetes",
+    "description": "Scales the replica count of an active deployment in Kubernetes.",
+    "trigger": {
+      "type": "self-service",
+      "operation": "DAY-2",
+      "blueprintIdentifier": "deployment",
+      "userInputs": {
+        "properties": {
+          "replicas": {
+            "type": "number",
+            "title": "New Replica Count",
+            "description": "Desired number of pods",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 3
+          }
+        },
+        "required": ["replicas"]
+      }
+    },
+    "invocationMethod": {
+      "type": "GITHUB",
+      "org": "YOUR_GITHUB_ORG",
+      "repo": "YOUR_GITHUB_REPO",
+      "workflow": "deploy.yml",
+      "workflowInputs": {
+        "service": "{{ .entity.relations.microservice[0] }}",
+        "environment": "{{ .entity.relations.environment[0] }}",
+        "namespace": "{{ .entity.properties.namespace }}",
+        "replicas": "{{ .inputs.replicas }}",
+        "port_run_id": "{{ .run.id }}"
+      }
+    }
+  },
+  {
+    "identifier": "teardown_environment",
+    "title": "Teardown Environment",
+    "icon": "Environment",
+    "description": "Deletes all resources in the target environment and removes associated deployments.",
+    "trigger": {
+      "type": "self-service",
+      "operation": "DAY-2",
+      "blueprintIdentifier": "environment",
+      "userInputs": {
+        "properties": {
+          "confirm": {
+            "type": "boolean",
+            "title": "Confirm Teardown",
+            "description": "Are you sure you want to permanently delete this environment?",
+            "default": false
+          }
+        },
+        "required": ["confirm"]
+      }
+    },
+    "invocationMethod": {
+      "type": "GITHUB",
+      "org": "YOUR_GITHUB_ORG",
+      "repo": "YOUR_GITHUB_REPO",
+      "workflow": "teardown.yml",
+      "workflowInputs": {
+        "environment": "{{ .entity.identifier }}",
+        "confirm": "{{ .inputs.confirm }}",
         "port_run_id": "{{ .run.id }}"
       }
     }

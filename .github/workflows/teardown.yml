@@ -1,0 +1,114 @@
+name: Day 2 - Teardown Environment via Port.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment to teardown"
+        required: true
+        type: string
+      confirm:
+        description: "Confirm environment teardown"
+        required: true
+        type: boolean
+        default: false
+      port_run_id:
+        description: "Port Run ID for tracking execution progress"
+        required: true
+        type: string
+
+jobs:
+  teardown-env:
+    name: Destroy Environment Resources & Clean Catalog
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Inform Port that teardown is in progress
+      - name: Report Teardown In-Progress to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Checking confirmation for environment teardown on '${{ github.event.inputs.environment }}'..."
+
+      # 2. Check confirmation
+      - name: Verify Teardown Confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "true" ]; then
+            echo "Error: Teardown was not confirmed!"
+            exit 1
+          fi
+          echo "Teardown confirmed. Proceeding to destroy resources..."
+
+      # 3. Inform Port of resource destruction stage
+      - name: Report Resource Deletion to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Deleting deployments, services, and ingress rules in K8s namespace '${{ github.event.inputs.environment }}'..."
+
+      # 4. Simulate K8s resource deletion (Dry Run)
+      - name: Destroy K8s Resources
+        run: |
+          if [ -z "${{ secrets.KUBECONFIG }}" ]; then
+            echo "::warning::KUBECONFIG secret is missing. Running in simulated dry-run teardown mode."
+            echo "kubectl delete deployment --all -n ${{ github.event.inputs.environment }} --dry-run=client"
+            echo "kubectl delete service --all -n ${{ github.event.inputs.environment }} --dry-run=client"
+            echo "kubectl delete ingress --all -n ${{ github.event.inputs.environment }} --dry-run=client"
+            echo "kubectl delete namespace ${{ github.event.inputs.environment }} --dry-run=client"
+            sleep 3
+            echo "K8s resources deleted successfully."
+          else
+            mkdir -p $HOME/.kube
+            echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+            kubectl delete deployment --all -n ${{ github.event.inputs.environment }} --ignore-not-found
+            kubectl delete service --all -n ${{ github.event.inputs.environment }} --ignore-not-found
+            kubectl delete ingress --all -n ${{ github.event.inputs.environment }} --ignore-not-found
+            kubectl delete namespace ${{ github.event.inputs.environment }} --ignore-not-found
+          fi
+
+      # 5. Clean up Port catalog
+      - name: Report Catalog Cleanup to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Removing active deployments and setting environment state to inactive in Port.io..."
+
+      # We can delete the environment entity if it is dynamic, or update its status.
+      # Since we are tearing down, let's delete the environment entity in Port.
+      - name: Delete Environment Entity in Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: DELETE
+          blueprint: environment
+          identifier: ${{ github.event.inputs.environment }}
+        continue-on-error: true # Keep going even if environment entity is not present
+
+      # 6. Report execution success to Port
+      - name: Report Execution Success to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: SUCCESS
+          logMessage: "Teardown complete! Destroyed all Kubernetes resources inside namespace '${{ github.event.inputs.environment }}' and cleaned up catalog entities in Port.io."

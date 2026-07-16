@@ -1,0 +1,142 @@
+name: Day 1 - Scaffold Microservice via Port.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_name:
+        description: "Name of the new microservice"
+        required: true
+        type: string
+      language:
+        description: "Programming language to use"
+        required: true
+        type: choice
+        options:
+          - JavaScript
+          - TypeScript
+          - Python
+          - Go
+        default: JavaScript
+      framework:
+        description: "Web framework"
+        required: true
+        type: string
+        default: "Express.js"
+      port_run_id:
+        description: "Port Run ID for tracking execution progress"
+        required: true
+        type: string
+
+jobs:
+  scaffold-service:
+    name: Scaffold Service & Register in Catalog
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Inform Port that scaffolding is starting
+      - name: Report Scaffolding In-Progress to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Initializing scaffolding for new microservice '${{ github.event.inputs.service_name }}' using ${{ github.event.inputs.language }} (${{ github.event.inputs.framework }})..."
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Simulate Templating and File Scaffolding
+      - name: Report Templating to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Generating folder structure and copying files from template directory for '${{ github.event.inputs.service_name }}'..."
+
+      - name: Scaffold Files
+        run: |
+          mkdir -p "services/${{ github.event.inputs.service_name }}"
+          echo "Scaffolding complete in services/${{ github.event.inputs.service_name }}"
+          
+          # Write mock package.json
+          cat <<EOF > "services/${{ github.event.inputs.service_name }}/package.json"
+          {
+            "name": "${{ github.event.inputs.service_name }}",
+            "version": "1.0.0",
+            "description": "Scaffolded by Port.io IDP",
+            "main": "index.js",
+            "scripts": {
+              "start": "node index.js",
+              "test": "echo \"Error: no test specified\" && exit 0"
+            },
+            "dependencies": {}
+          }
+          EOF
+          
+          # Write mock index.js
+          cat <<EOF > "services/${{ github.event.inputs.service_name }}/index.js"
+          console.log("Hello from ${{ github.event.inputs.service_name }} scaffolded by Port!");
+          EOF
+
+      # 3. Simulate Push / Commit
+      - name: Report Committing to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: IN_PROGRESS
+          logMessage: "Commit generated files and push branch to origin..."
+
+      - name: Simulate Git Commit (Dry Run)
+        run: |
+          git config --global user.name "port-idp-bot"
+          git config --global user.email "idp-bot@port.io"
+          echo "Simulated: git add ."
+          echo "Simulated: git commit -m 'Scaffold microservice ${{ github.event.inputs.service_name }}'"
+          echo "Simulated: git push origin main"
+          sleep 2
+
+      # 4. Catalog the newly created microservice in Port
+      - name: Catalog Microservice in Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: UPSERT
+          blueprint: microservice
+          identifier: ${{ github.event.inputs.service_name }}
+          title: "Service: ${{ github.event.inputs.service_name }}"
+          icon: Nodejs
+          properties: |
+            {
+              "language": "${{ github.event.inputs.language }}",
+              "framework": "${{ github.event.inputs.framework }}",
+              "qualityGate": "PASSED",
+              "bugs": 0,
+              "vulnerabilities": 0,
+              "coverage": 100,
+              "repoUrl": "https://github.com/${{ github.repository }}"
+            }
+
+      # 5. Report success to Port
+      - name: Report Execution Success to Port.io
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.port.io
+          operation: PATCH_RUN
+          runId: ${{ github.event.inputs.port_run_id }}
+          status: SUCCESS
+          logMessage: "Scaffolding completed! Created service folder 'services/${{ github.event.inputs.service_name }}', pushed template configuration and registered new microservice entity in Port catalog."

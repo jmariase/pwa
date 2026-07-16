@@ -19,5 +19,5 @@ resources:
             imageTag: ".spec.template.spec.containers[0].image | split(\":\")[-1]"
             cluster: ".clusterName // \"k8s-production-cluster\""
           relations:
-            microservice: "[\"pwa-client-app\"]"
-            environment: "if .metadata.namespace == \"production\" then [\"production\"] else [\"staging\"] end"
+            microservice: "if .metadata.name == \"pwa-backend\" then [\"pwa-backend-app\"] else [\"pwa-client-app\"] end"
+            environment: "if .metadata.namespace == \"prod\" then [\"prod\"] else [\"qa\"] end"

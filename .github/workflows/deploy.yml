@@ -16,14 +16,14 @@ on:
         required: true
         type: choice
         options:
-          - staging
-          - production
-        default: staging
+          - qa
+          - prod
+        default: qa
       namespace:
         description: "Kubernetes Namespace"
         required: true
         type: string
-        default: default
+        default: qa
       replicas:
         description: "Number of Pod Replicas"
         required: true
@@ -142,7 +142,7 @@ jobs:
           operation: PATCH_RUN
           runId: ${{ github.event.inputs.port_run_id }}
           status: IN_PROGRESS
-          logMessage: "Applying manifests and waiting for Kubernetes rollout of '${{ env.K8S_DEPLOYMENT_NAME }}'..."
+          logMessage: "Applying manifests and waiting for Kubernetes rollout of '${{ env.K8S_DEPLOYMENT_NAME }}' in namespace '${{ github.event.inputs.namespace }}'..."
 
       - name: Deploy to Kubernetes Cluster
         run: |
