@@ -15,7 +15,7 @@ if (!clientId || !clientSecret) {
   process.exit(1);
 }
 
-const baseUrl = 'https://api.port.io/v1';
+const baseUrl = 'https://api.getport.io/v1';
 
 async function run() {
   try {

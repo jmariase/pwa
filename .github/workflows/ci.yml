@@ -57,7 +57,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: UPSERT
           blueprint: microservice
           identifier: pwa-client-app
@@ -79,7 +79,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: UPSERT
           blueprint: microservice
           identifier: pwa-backend-app

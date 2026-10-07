@@ -39,7 +39,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: PATCH_RUN
           runId: ${{ github.event.inputs.port_run_id }}
           status: IN_PROGRESS
@@ -54,7 +54,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: PATCH_RUN
           runId: ${{ github.event.inputs.port_run_id }}
           status: IN_PROGRESS
@@ -91,7 +91,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: PATCH_RUN
           runId: ${{ github.event.inputs.port_run_id }}
           status: IN_PROGRESS
@@ -112,7 +112,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: UPSERT
           blueprint: microservice
           identifier: ${{ github.event.inputs.service_name }}
@@ -135,7 +135,7 @@ jobs:
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.port.io
+          baseUrl: https://api.getport.io
           operation: PATCH_RUN
           runId: ${{ github.event.inputs.port_run_id }}
           status: SUCCESS
